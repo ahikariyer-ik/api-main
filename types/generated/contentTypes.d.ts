@@ -691,6 +691,47 @@ export interface ApiContactContact extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiDemoRequestDemoRequest extends Struct.CollectionTypeSchema {
+  collectionName: 'demo_requests';
+  info: {
+    description: 'Demo form submissions from website';
+    displayName: 'Demo Request';
+    pluralName: 'demo-requests';
+    singularName: 'demo-request';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    companyName: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    fullName: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::demo-request.demo-request'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text;
+    notes: Schema.Attribute.Text;
+    phone: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    source: Schema.Attribute.String & Schema.Attribute.DefaultTo<'website'>;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'contacted', 'converted', 'rejected']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiDepartmentDepartment extends Struct.CollectionTypeSchema {
   collectionName: 'departments';
   info: {
@@ -1708,6 +1749,7 @@ declare module '@strapi/strapi' {
       'api::company-profile.company-profile': ApiCompanyProfileCompanyProfile;
       'api::contact-form.contact-form': ApiContactFormContactForm;
       'api::contact.contact': ApiContactContact;
+      'api::demo-request.demo-request': ApiDemoRequestDemoRequest;
       'api::department.department': ApiDepartmentDepartment;
       'api::job-listing.job-listing': ApiJobListingJobListing;
       'api::leave-request.leave-request': ApiLeaveRequestLeaveRequest;
