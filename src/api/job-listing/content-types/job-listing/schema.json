@@ -1,0 +1,123 @@
+{
+  "kind": "collectionType",
+  "collectionName": "job_listings",
+  "info": {
+    "singularName": "job-listing",
+    "pluralName": "job-listings",
+    "displayName": "Job Listing",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "profession": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::profession.profession"
+    },
+    "city": {
+      "type": "string"
+    },
+    "district": {
+      "type": "string"
+    },
+    "department": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::department.department"
+    },
+    "work_mode": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::work-mode.work-mode"
+    },
+    "position": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::position.position"
+    },
+    "employmentType": {
+      "type": "enumeration",
+      "enum": [
+        "Tam Zamanlı",
+        "Dönemsel",
+        "Yarı Zamanlı"
+      ]
+    },
+    "disabilityFriendly": {
+      "type": "boolean",
+      "default": false
+    },
+    "minAge": {
+      "type": "integer"
+    },
+    "maxAge": {
+      "type": "integer"
+    },
+    "educationRequirement": {
+      "type": "enumeration",
+      "enum": [
+        "İlköğretim",
+        "Ortaöğretim",
+        "Lise",
+        "Lisans",
+        "Yüksek Lisans",
+        "Doktora"
+      ]
+    },
+    "publicationEndDate": {
+      "type": "datetime"
+    },
+    "jobStatus": {
+      "type": "enumeration",
+      "enum": [
+        "Active",
+        "Expired",
+        "Pending"
+      ],
+      "default": "Pending",
+      "required": true,
+      "pluginOptions": {}
+    },
+    "company": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::company-profile.company-profile"
+    },
+    "applicationCount": {
+      "type": "integer",
+      "default": 0,
+      "required": false
+    },
+    "gender": {
+      "type": "enumeration",
+      "enum": [
+        "Belirsiz",
+        "Erkek",
+        "Kadın",
+        "Farketmez"
+      ]
+    },
+    "contactEmail": {
+      "type": "email"
+    },
+    "contactPhone": {
+      "type": "string"
+    },
+    "description": {
+      "type": "richtext"
+    },
+    "requiredQualifications": {
+      "type": "richtext"
+    },
+    "jobNature": {
+      "type": "richtext"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "application_logs",
+  "info": {
+    "singularName": "application-log",
+    "pluralName": "application-logs",
+    "displayName": "Application Log"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "job_listing": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::job-listing.job-listing"
+    },
+    "applicantIP": {
+      "type": "string"
+    },
+    "additionalData": {
+      "type": "json"
+    }
+  }
+}

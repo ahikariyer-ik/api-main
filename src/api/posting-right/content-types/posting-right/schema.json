@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "posting_rights",
+  "info": {
+    "singularName": "posting-right",
+    "pluralName": "posting-rights",
+    "displayName": "Posting Right"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "company": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::company-profile.company-profile"
+    },
+    "postingQuota": {
+      "default": 0,
+      "type": "integer"
+    },
+    "postingsUsed": {
+      "type": "integer",
+      "default": 0
+    },
+    "activePostings": {
+      "type": "integer",
+      "default": 0
+    },
+    "totalApplicationCount": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

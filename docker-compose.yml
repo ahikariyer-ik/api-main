@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  strapi:
+    image: strapi/strapi:latest
+    container_name: strapi
+    environment:
+      - DATABASE_CLIENT=postgres
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=ahikariyer_db
+      - DATABASE_USERNAME=ahikariyer
+      - DATABASE_PASSWORD=A.jgtqmda.123
+      - DATABASE_SSL=false
+      - JWT_SECRET=3PwoY10tMQY79oBjmT8JMA==
+    ports:
+      - '1337:1337'
+    volumes:
+      - ./strapi:/srv/app
+    depends_on:
+      - postgres
+    networks:
+      - strapi-network
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=ahikariyer_db
+      - POSTGRES_USER=ahikariyer
+      - POSTGRES_PASSWORD=A.jgtqmda.123
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - strapi-network
+
+volumes:
+  postgres_data:
+
+networks:
+  strapi-network:
+    driver: bridge

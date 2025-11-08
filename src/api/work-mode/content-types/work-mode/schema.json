@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "work_modes",
+  "info": {
+    "singularName": "work-mode",
+    "pluralName": "work-modes",
+    "displayName": "Work Mode"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "key": {
+      "type": "string",
+      "unique": true
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "blocks"
+    }
+  }
+}
