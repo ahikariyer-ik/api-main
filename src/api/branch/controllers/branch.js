@@ -24,21 +24,28 @@ module.exports = createCoreController('api::branch.branch', ({ strapi }) => ({
       });
 
       if (!companyProfile) {
+        console.log('Company profile not found for user:', user.id);
         return ctx.send({ data: [] });
       }
+
+      console.log('Finding branches for company:', companyProfile.id);
 
       // Find branches for this company
       const branches = await strapi.db.query('api::branch.branch').findMany({
         where: { 
           company: companyProfile.id 
         },
-        populate: ['company']
+        populate: { company: true },
+        orderBy: { createdAt: 'desc' }
       });
+
+      console.log('Found branches:', branches.length);
 
       return ctx.send({ data: branches });
     } catch (error) {
       console.error('Find branches error:', error);
-      return ctx.internalServerError('Şubeler yüklenirken bir hata oluştu');
+      console.error('Error stack:', error.stack);
+      return ctx.send({ data: [], error: error.message });
     }
   },
 
@@ -62,7 +69,8 @@ module.exports = createCoreController('api::branch.branch', ({ strapi }) => ({
         return ctx.forbidden('Şirket profili bulunamadı');
       }
 
-      const { key, name, description } = ctx.request.body.data;
+      const requestData = ctx.request.body.data || ctx.request.body;
+      const { key, name, description, address, city, district, phone } = requestData;
 
       if (!key || !name) {
         return ctx.badRequest('Şube kodu ve adı zorunludur');
@@ -80,21 +88,30 @@ module.exports = createCoreController('api::branch.branch', ({ strapi }) => ({
         return ctx.badRequest('Bu şube kodu zaten kullanımda');
       }
 
+      console.log('Creating branch for company:', companyProfile.id);
+
       // Create branch
       const newBranch = await strapi.db.query('api::branch.branch').create({
         data: {
           key,
           name,
           description,
+          address,
+          city,
+          district,
+          phone,
           company: companyProfile.id
         },
-        populate: ['company']
+        populate: { company: true }
       });
+
+      console.log('Branch created successfully:', newBranch.id);
 
       return ctx.send({ data: newBranch });
     } catch (error) {
       console.error('Create branch error:', error);
-      return ctx.internalServerError('Şube oluşturulurken bir hata oluştu');
+      console.error('Error stack:', error.stack);
+      return ctx.badRequest(`Şube oluşturulurken bir hata oluştu: ${error.message}`);
     }
   },
 
@@ -134,17 +151,22 @@ module.exports = createCoreController('api::branch.branch', ({ strapi }) => ({
         return ctx.forbidden('Bu şubeyi düzenleme yetkiniz yok');
       }
 
-      const { key, name, description } = ctx.request.body.data;
+      const requestData = ctx.request.body.data || ctx.request.body;
+      const { key, name, description, address, city, district, phone } = requestData;
 
       // Update branch
       const updatedBranch = await strapi.db.query('api::branch.branch').update({
-        where: { documentId: id },
+        where: { id: branch.id },
         data: {
           key,
           name,
-          description
+          description,
+          address,
+          city,
+          district,
+          phone
         },
-        populate: ['company']
+        populate: { company: true }
       });
 
       return ctx.send({ data: updatedBranch });
@@ -192,13 +214,14 @@ module.exports = createCoreController('api::branch.branch', ({ strapi }) => ({
 
       // Delete branch
       await strapi.db.query('api::branch.branch').delete({
-        where: { documentId: id }
+        where: { id: branch.id }
       });
 
       return ctx.send({ data: branch });
     } catch (error) {
       console.error('Delete branch error:', error);
-      return ctx.internalServerError('Şube silinirken bir hata oluştu');
+      console.error('Error stack:', error.stack);
+      return ctx.badRequest(`Şube silinirken bir hata oluştu: ${error.message}`);
     }
   }
 }));

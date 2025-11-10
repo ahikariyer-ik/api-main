@@ -26,26 +26,46 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
       });
 
       if (!companyProfile) {
-        return ctx.notFound('Şirket profili bulunamadı');
+        console.log('Company profile not found for user:', user.id);
+        return ctx.send({ data: [] }); // Return empty array instead of error
       }
 
-      // Add company filter to query
-      ctx.query = {
-        ...ctx.query,
-        filters: {
-          ...ctx.query.filters,
-          company: {
-            id: companyProfile.id
-          }
-        }
+      console.log('Finding workers for company:', companyProfile.id);
+
+      // Build where clause
+      const whereClause = {
+        company: companyProfile.id
       };
 
-      // Call default find method with updated query
-      const { data, meta } = await super.find(ctx);
-      return { data, meta };
+      // Add isActive filter if provided
+      if (ctx.query.filters?.isActive !== undefined) {
+        whereClause.isActive = ctx.query.filters.isActive;
+      }
+
+      // Get workers filtered by company
+      const workers = await strapi.db.query('api::worker.worker').findMany({
+        where: whereClause,
+        populate: {
+          photo: true,
+          department: true,
+          branch: true,
+          position: true,
+          company: true,
+          user: true
+        },
+        orderBy: { createdAt: 'desc' },
+        limit: ctx.query.pagination?.pageSize || 100
+      });
+
+      console.log('Found workers:', workers.length);
+
+      return ctx.send({
+        data: workers
+      });
     } catch (error) {
       console.error('Error in worker find:', error);
-      return ctx.badRequest('Çalışanlar yüklenirken hata oluştu');
+      console.error('Error stack:', error.stack);
+      return ctx.send({ data: [], error: error.message });
     }
   },
 
@@ -363,7 +383,7 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
         orderBy: { createdAt: 'desc' }
       });
 
-      // Format response with document status
+      // Format response with document status and URLs
       const formattedWorkers = workers.map(worker => ({
         id: worker.documentId,
         firstName: worker.firstName,
@@ -377,11 +397,11 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
         uploadToken: worker.uploadToken,
         tokenExpiresAt: worker.tokenExpiresAt,
         documents: {
-          criminalRecordDoc: !!worker.criminalRecordDoc,
-          populationRegistryDoc: !!worker.populationRegistryDoc,
-          identityDoc: !!worker.identityDoc,
-          residenceDoc: !!worker.residenceDoc,
-          militaryDoc: !!worker.militaryDoc
+          criminalRecordDoc: worker.criminalRecordDoc || null,
+          populationRegistryDoc: worker.populationRegistryDoc || null,
+          identityDoc: worker.identityDoc || null,
+          residenceDoc: worker.residenceDoc || null,
+          militaryDoc: worker.militaryDoc || null
         }
       }));
 
@@ -585,6 +605,80 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
     } catch (error) {
       console.error('Bulk import error:', error);
       return ctx.internalServerError('Toplu çalışan eklenirken bir hata oluştu');
+    }
+  },
+
+  /**
+   * Delete document from worker
+   */
+  async deleteDocument(ctx) {
+    try {
+      const { workerId, documentType } = ctx.params;
+      const user = ctx.state.user;
+
+      if (!user) {
+        return ctx.unauthorized('Kimlik doğrulaması gerekli');
+      }
+
+      // Get company profile
+      const companyProfile = await strapi.db.query('api::company-profile.company-profile').findOne({
+        where: { user: user.id }
+      });
+
+      if (!companyProfile) {
+        return ctx.badRequest('Şirket profili bulunamadı');
+      }
+
+      // Get worker
+      const worker = await strapi.db.query('api::worker.worker').findOne({
+        where: { 
+          documentId: workerId,
+          company: companyProfile.id
+        },
+        populate: [documentType]
+      });
+
+      if (!worker) {
+        return ctx.notFound('Çalışan bulunamadı veya bu çalışana erişim yetkiniz yok');
+      }
+
+      // Valid document types
+      const validDocTypes = [
+        'criminalRecordDoc',
+        'populationRegistryDoc',
+        'identityDoc',
+        'residenceDoc',
+        'militaryDoc'
+      ];
+
+      if (!validDocTypes.includes(documentType)) {
+        return ctx.badRequest('Geçersiz evrak tipi');
+      }
+
+      // Check if document exists
+      const documentId = worker[documentType];
+      if (!documentId) {
+        return ctx.notFound('Bu evrak mevcut değil');
+      }
+
+      // Delete the file from media library
+      await strapi.plugins.upload.services.upload.remove({ id: documentId });
+
+      // Update worker - set document field to null
+      await strapi.db.query('api::worker.worker').update({
+        where: { id: worker.id },
+        data: {
+          [documentType]: null
+        }
+      });
+
+      return ctx.send({ 
+        message: 'Evrak başarıyla silindi',
+        success: true 
+      });
+    } catch (error) {
+      console.error('Delete document error:', error);
+      return ctx.internalServerError('Evrak silinirken bir hata oluştu');
     }
   }
 }));

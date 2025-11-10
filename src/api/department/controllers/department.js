@@ -20,21 +20,28 @@ module.exports = createCoreController('api::department.department', ({ strapi })
       });
 
       if (!companyProfile) {
+        console.log('Company profile not found for user:', user.id);
         return ctx.send({ data: [] });
       }
+
+      console.log('Finding departments for company:', companyProfile.id);
 
       // Find departments for this company
       const departments = await strapi.db.query('api::department.department').findMany({
         where: { 
           company: companyProfile.id 
         },
-        populate: ['company']
+        populate: { company: true },
+        orderBy: { createdAt: 'desc' }
       });
+
+      console.log('Found departments:', departments.length);
 
       return ctx.send({ data: departments });
     } catch (error) {
       console.error('Find departments error:', error);
-      return ctx.internalServerError('Departmanlar yüklenirken bir hata oluştu');
+      console.error('Error stack:', error.stack);
+      return ctx.send({ data: [], error: error.message });
     }
   },
 
@@ -58,7 +65,8 @@ module.exports = createCoreController('api::department.department', ({ strapi })
         return ctx.forbidden('Şirket profili bulunamadı');
       }
 
-      const { key, name, description } = ctx.request.body.data;
+      const requestData = ctx.request.body.data || ctx.request.body;
+      const { key, name, description } = requestData;
 
       if (!key || !name) {
         return ctx.badRequest('Departman kodu ve adı zorunludur');
@@ -76,6 +84,8 @@ module.exports = createCoreController('api::department.department', ({ strapi })
         return ctx.badRequest('Bu departman kodu zaten kullanımda');
       }
 
+      console.log('Creating department for company:', companyProfile.id);
+
       // Create department
       const newDepartment = await strapi.db.query('api::department.department').create({
         data: {
@@ -84,13 +94,16 @@ module.exports = createCoreController('api::department.department', ({ strapi })
           description,
           company: companyProfile.id
         },
-        populate: ['company']
+        populate: { company: true }
       });
+
+      console.log('Department created successfully:', newDepartment.id);
 
       return ctx.send({ data: newDepartment });
     } catch (error) {
       console.error('Create department error:', error);
-      return ctx.internalServerError('Departman oluşturulurken bir hata oluştu');
+      console.error('Error stack:', error.stack);
+      return ctx.badRequest(`Departman oluşturulurken bir hata oluştu: ${error.message}`);
     }
   },
 
@@ -130,17 +143,18 @@ module.exports = createCoreController('api::department.department', ({ strapi })
         return ctx.forbidden('Bu departmanı düzenleme yetkiniz yok');
       }
 
-      const { key, name, description } = ctx.request.body.data;
+      const requestData = ctx.request.body.data || ctx.request.body;
+      const { key, name, description } = requestData;
 
       // Update department
       const updatedDepartment = await strapi.db.query('api::department.department').update({
-        where: { documentId: id },
+        where: { id: department.id },
         data: {
           key,
           name,
           description
         },
-        populate: ['company']
+        populate: { company: true }
       });
 
       return ctx.send({ data: updatedDepartment });
@@ -188,13 +202,14 @@ module.exports = createCoreController('api::department.department', ({ strapi })
 
       // Delete department
       await strapi.db.query('api::department.department').delete({
-        where: { documentId: id }
+        where: { id: department.id }
       });
 
       return ctx.send({ data: department });
     } catch (error) {
       console.error('Delete department error:', error);
-      return ctx.internalServerError('Departman silinirken bir hata oluştu');
+      console.error('Error stack:', error.stack);
+      return ctx.badRequest(`Departman silinirken bir hata oluştu: ${error.message}`);
     }
   }
 }));

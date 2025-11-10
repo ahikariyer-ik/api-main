@@ -62,6 +62,15 @@ module.exports = {
         middlewares: [],
       },
     },
+    {
+      method: 'POST',
+      path: '/workers/:workerId/document/:documentType/delete',
+      handler: 'worker.deleteDocument',
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };
 
