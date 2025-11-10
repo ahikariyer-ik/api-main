@@ -7,8 +7,43 @@
 const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController('api::leave-request.leave-request', ({ strapi }) => ({
-  // Default methods
-  ...createCoreController('api::leave-request.leave-request')({ strapi }),
+  /**
+   * Override find method to filter by company
+   * GET /api/leave-requests
+   */
+  async find(ctx) {
+    try {
+      const user = ctx.state.user;
+
+      if (!user) {
+        return ctx.unauthorized('Giriş yapmalısınız');
+      }
+
+      // Find company profile for user (company owner)
+      const companyProfile = await strapi.db.query('api::company-profile.company-profile').findOne({
+        where: { owner: user.id }
+      });
+
+      if (!companyProfile) {
+        return ctx.notFound('Şirket profili bulunamadı. Sadece şirket sahipleri izin taleplerini görüntüleyebilir.');
+      }
+
+      // Get leave requests for this company only
+      const leaveRequests = await strapi.db.query('api::leave-request.leave-request').findMany({
+        where: { company: companyProfile.id },
+        populate: ['worker', 'worker.photo', 'worker.department', 'reviewedBy'],
+        orderBy: { createdAt: 'desc' },
+        limit: ctx.query.pagination?.pageSize || 100
+      });
+
+      return ctx.send({
+        data: leaveRequests
+      });
+    } catch (error) {
+      console.error('Find leave requests error:', error);
+      return ctx.internalServerError('İzin talepleri yüklenirken bir hata oluştu: ' + error.message);
+    }
+  },
 
   /**
    * Override create method to auto-find worker from user
