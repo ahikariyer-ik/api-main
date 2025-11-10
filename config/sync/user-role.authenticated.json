@@ -126,6 +126,96 @@
       "locale": null
     },
     {
+      "documentId": "lr_auth_create_001",
+      "action": "api::leave-request.leave-request.create",
+      "locale": null
+    },
+    {
+      "documentId": "lr_auth_find_001",
+      "action": "api::leave-request.leave-request.find",
+      "locale": null
+    },
+    {
+      "documentId": "lr_auth_findone_001",
+      "action": "api::leave-request.leave-request.findOne",
+      "locale": null
+    },
+    {
+      "documentId": "lr_auth_update_001",
+      "action": "api::leave-request.leave-request.update",
+      "locale": null
+    },
+    {
+      "documentId": "lr_auth_delete_001",
+      "action": "api::leave-request.leave-request.delete",
+      "locale": null
+    },
+    {
+      "documentId": "lr_auth_approve_001",
+      "action": "api::leave-request.leave-request.approve",
+      "locale": null
+    },
+    {
+      "documentId": "lr_auth_reject_001",
+      "action": "api::leave-request.leave-request.reject",
+      "locale": null
+    },
+    {
+      "documentId": "lr_auth_getremaining_001",
+      "action": "api::leave-request.leave-request.getRemainingDays",
+      "locale": null
+    },
+    {
+      "documentId": "worker_auth_find_001",
+      "action": "api::worker.worker.find",
+      "locale": null
+    },
+    {
+      "documentId": "worker_auth_findone_001",
+      "action": "api::worker.worker.findOne",
+      "locale": null
+    },
+    {
+      "documentId": "worker_auth_create_001",
+      "action": "api::worker.worker.create",
+      "locale": null
+    },
+    {
+      "documentId": "worker_auth_update_001",
+      "action": "api::worker.worker.update",
+      "locale": null
+    },
+    {
+      "documentId": "worker_auth_delete_001",
+      "action": "api::worker.worker.delete",
+      "locale": null
+    },
+    {
+      "documentId": "task_auth_find_001",
+      "action": "api::task.task.find",
+      "locale": null
+    },
+    {
+      "documentId": "task_auth_findone_001",
+      "action": "api::task.task.findOne",
+      "locale": null
+    },
+    {
+      "documentId": "task_auth_create_001",
+      "action": "api::task.task.create",
+      "locale": null
+    },
+    {
+      "documentId": "task_auth_update_001",
+      "action": "api::task.task.update",
+      "locale": null
+    },
+    {
+      "documentId": "task_auth_delete_001",
+      "action": "api::task.task.delete",
+      "locale": null
+    },
+    {
       "documentId": "evif0mu5nu1ezzean2tu89ed",
       "action": "plugin::upload.content-api.upload",
       "locale": null

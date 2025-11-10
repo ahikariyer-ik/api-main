@@ -70,17 +70,79 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
   },
 
   /**
-   * Override create method - Don't create user, just create worker
+   * Override create method - Create user account if requested
    */
   async create(ctx) {
     try {
       const { data } = ctx.request.body;
       
-      // Just create worker with the data from frontend
-      // Frontend already creates the user separately
+      let userId = null;
+
+      // Kullanıcı hesabı oluşturulacaksa
+      if (data.createUserAccount && data.password) {
+        // Worker role'ünü bul
+        const workerRole = await strapi.db.query('plugin::users-permissions.role').findOne({
+          where: { type: 'worker' }
+        });
+
+        if (!workerRole) {
+          throw new Error('Worker rolü bulunamadı. Lütfen önce "worker" adında bir rol oluşturun.');
+        }
+
+        // Email'in kullanılmadığını kontrol et
+        const existingUser = await strapi.db.query('plugin::users-permissions.user').findOne({
+          where: { email: data.email }
+        });
+
+        if (existingUser) {
+          throw new Error('Bu email adresi ile kayıtlı bir kullanıcı zaten mevcut');
+        }
+
+        // Şifreyi bcrypt ile hash'le
+        const bcrypt = require('bcryptjs');
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+
+        // Kullanıcı oluştur
+        const user = await strapi.db.query('plugin::users-permissions.user').create({
+          data: {
+            username: data.email, // Email'i username olarak kullan
+            email: data.email,
+            password: hashedPassword,
+            confirmed: true, // Otomatik onayla
+            blocked: false,
+            role: workerRole.id
+          }
+        });
+
+        userId = user.id;
+        console.log('Worker user account created:', user.id);
+      }
+
+      // Worker oluştur
+      const workerData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone,
+        birthDate: data.birthDate,
+        hireDate: data.hireDate,
+        profession: data.profession,
+        department: data.department,
+        branch: data.branch,
+        position: data.position,
+        isRetired: data.isRetired,
+        isDisabled: data.isDisabled,
+        isForeigner: data.isForeigner,
+        salary: data.salary,
+        isActive: data.isActive !== undefined ? data.isActive : true,
+        company: data.company,
+        photo: data.photo,
+        user: userId // User hesabı oluşturulduysa bağla
+      };
+
       const entity = await strapi.entityService.create('api::worker.worker', {
-        data: data,
-        populate: ['department', 'branch', 'position', 'company', 'user']
+        data: workerData,
+        populate: ['department', 'branch', 'position', 'company', 'user', 'photo']
       });
 
       return this.transformResponse(entity);
@@ -91,7 +153,7 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
   },
 
   /**
-   * Override update method to update worker's user account
+   * Override update method to update worker's user account and password
    */
   async update(ctx) {
     try {
@@ -108,18 +170,36 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
         return ctx.notFound('Worker not found');
       }
 
-      // NOT: Password ve user account yönetimi kaldırıldı - farklı yöntem uygulanacak
+      // Şifre değiştirilecek mi?
+      if (data.changePassword && data.newPassword && worker.user) {
+        // Şifreyi bcrypt ile hash'le
+        const bcrypt = require('bcryptjs');
+        const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+
+        // User'ın şifresini güncelle
+        await strapi.db.query('plugin::users-permissions.user').update({
+          where: { id: worker.user.id },
+          data: {
+            password: hashedPassword
+          }
+        });
+
+        console.log('Worker password updated for user:', worker.user.id);
+      }
+
+      // changePassword ve newPassword'u data'dan çıkar (worker kaydında tutmaya gerek yok)
+      const { changePassword, newPassword, ...workerData } = data;
 
       // Update worker
       const entity = await strapi.entityService.update('api::worker.worker', worker.id, {
-        data,
-        populate: ['department', 'branch', 'position', 'company', 'user']
+        data: workerData,
+        populate: ['department', 'branch', 'position', 'company', 'user', 'photo']
       });
 
       return this.transformResponse(entity);
     } catch (error) {
       console.error('Error in worker update:', error);
-      return ctx.badRequest('Worker update failed');
+      return ctx.badRequest(error.message || 'Worker update failed');
     }
   },
 

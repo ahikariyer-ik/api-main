@@ -351,6 +351,56 @@
       "locale": null
     },
     {
+      "documentId": "lr_create_001",
+      "action": "api::leave-request.leave-request.create",
+      "locale": null
+    },
+    {
+      "documentId": "lr_find_001",
+      "action": "api::leave-request.leave-request.find",
+      "locale": null
+    },
+    {
+      "documentId": "lr_findone_001",
+      "action": "api::leave-request.leave-request.findOne",
+      "locale": null
+    },
+    {
+      "documentId": "lr_myrequests_001",
+      "action": "api::leave-request.leave-request.getMyRequests",
+      "locale": null
+    },
+    {
+      "documentId": "lr_myremaining_001",
+      "action": "api::leave-request.leave-request.getMyRemainingDays",
+      "locale": null
+    },
+    {
+      "documentId": "task_mytasks_001",
+      "action": "api::task.task.getMyTasks",
+      "locale": null
+    },
+    {
+      "documentId": "task_update_001",
+      "action": "api::task.task.update",
+      "locale": null
+    },
+    {
+      "documentId": "worker_find_001",
+      "action": "api::worker.worker.find",
+      "locale": null
+    },
+    {
+      "documentId": "worker_findone_001",
+      "action": "api::worker.worker.findOne",
+      "locale": null
+    },
+    {
+      "documentId": "worker_getme_001",
+      "action": "api::worker.worker.getMe",
+      "locale": null
+    },
+    {
       "documentId": "jc72atsgr9oj9e1g434udioj",
       "action": "plugin::content-type-builder.components.getComponent",
       "locale": null
