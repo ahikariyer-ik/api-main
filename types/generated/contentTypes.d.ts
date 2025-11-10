@@ -1189,6 +1189,7 @@ export interface ApiWorkerWorker extends Struct.CollectionTypeSchema {
     email: Schema.Attribute.Email &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    employmentStartDoc: Schema.Attribute.Media<'files'>;
     firstName: Schema.Attribute.String & Schema.Attribute.Required;
     hireDate: Schema.Attribute.Date & Schema.Attribute.Required;
     identityDoc: Schema.Attribute.Media<'files'>;

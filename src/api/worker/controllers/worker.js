@@ -288,7 +288,8 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
           'populationRegistryDoc',
           'identityDoc',
           'residenceDoc',
-          'militaryDoc'
+          'militaryDoc',
+          'employmentStartDoc'
         ]
       });
 
@@ -313,7 +314,8 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
             populationRegistryDoc: !!worker.populationRegistryDoc,
             identityDoc: !!worker.identityDoc,
             residenceDoc: !!worker.residenceDoc,
-            militaryDoc: !!worker.militaryDoc
+            militaryDoc: !!worker.militaryDoc,
+            employmentStartDoc: !!worker.employmentStartDoc
           }
         }
       });
@@ -346,7 +348,8 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
         'populationRegistryDoc',
         'identityDoc',
         'residenceDoc',
-        'militaryDoc'
+        'militaryDoc',
+        'employmentStartDoc'
       ];
 
       if (!validDocTypes.includes(documentType)) {
@@ -401,7 +404,8 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
           'populationRegistryDoc',
           'identityDoc',
           'residenceDoc',
-          'militaryDoc'
+          'militaryDoc',
+          'employmentStartDoc'
         ]
       });
 
@@ -414,7 +418,8 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
             populationRegistryDoc: !!updatedWorker.populationRegistryDoc,
             identityDoc: !!updatedWorker.identityDoc,
             residenceDoc: !!updatedWorker.residenceDoc,
-            militaryDoc: !!updatedWorker.militaryDoc
+            militaryDoc: !!updatedWorker.militaryDoc,
+            employmentStartDoc: !!updatedWorker.employmentStartDoc
           }
         }
       });
@@ -458,7 +463,8 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
           'populationRegistryDoc',
           'identityDoc',
           'residenceDoc',
-          'militaryDoc'
+          'militaryDoc',
+          'employmentStartDoc'
         ],
         orderBy: { createdAt: 'desc' }
       });
@@ -481,7 +487,8 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
           populationRegistryDoc: worker.populationRegistryDoc || null,
           identityDoc: worker.identityDoc || null,
           residenceDoc: worker.residenceDoc || null,
-          militaryDoc: worker.militaryDoc || null
+          militaryDoc: worker.militaryDoc || null,
+          employmentStartDoc: worker.employmentStartDoc || null
         }
       }));
 
@@ -702,7 +709,7 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
 
       // Get company profile
       const companyProfile = await strapi.db.query('api::company-profile.company-profile').findOne({
-        where: { user: user.id }
+        where: { owner: user.id }
       });
 
       if (!companyProfile) {
@@ -728,7 +735,8 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
         'populationRegistryDoc',
         'identityDoc',
         'residenceDoc',
-        'militaryDoc'
+        'militaryDoc',
+        'employmentStartDoc'
       ];
 
       if (!validDocTypes.includes(documentType)) {
@@ -736,13 +744,16 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
       }
 
       // Check if document exists
-      const documentId = worker[documentType];
-      if (!documentId) {
+      const document = worker[documentType];
+      if (!document) {
         return ctx.notFound('Bu evrak mevcut değil');
       }
 
+      // Get the actual file ID (it might be an object if populated, or just an ID)
+      const fileId = typeof document === 'object' ? document.id : document;
+
       // Delete the file from media library
-      await strapi.plugins.upload.services.upload.remove({ id: documentId });
+      await strapi.plugins.upload.services.upload.remove({ id: fileId });
 
       // Update worker - set document field to null
       await strapi.db.query('api::worker.worker').update({
