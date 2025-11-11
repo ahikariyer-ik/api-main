@@ -12,3 +12,4 @@ module.exports = createCoreRouter('api::property.property');
 
 
 
+

@@ -27,16 +27,23 @@
       ]
     },
     "usageType": {
-      "type": "enumeration",
-      "enum": [
-        "rented",
-        "foundation_use",
-        "usufruct"
-      ],
-      "required": true
+      "type": "string",
+      "required": false
     },
     "address": {
       "type": "text",
+      "required": false
+    },
+    "uavtAddress": {
+      "type": "text",
+      "required": false
+    },
+    "daskPolicyNumber": {
+      "type": "string",
+      "required": false
+    },
+    "acquisitionMethod": {
+      "type": "string",
       "required": false
     },
     "daskPolicy": {
@@ -62,6 +69,7 @@
     }
   }
 }
+
 
 
 

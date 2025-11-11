@@ -1245,6 +1245,7 @@ export interface ApiPropertyProperty extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    acquisitionMethod: Schema.Attribute.String;
     address: Schema.Attribute.Text;
     company: Schema.Attribute.Relation<
       'manyToOne',
@@ -1254,6 +1255,7 @@ export interface ApiPropertyProperty extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     daskPolicy: Schema.Attribute.Media<'files'>;
+    daskPolicyNumber: Schema.Attribute.String;
     institution: Schema.Attribute.Relation<
       'manyToOne',
       'api::institution.institution'
@@ -1268,13 +1270,11 @@ export interface ApiPropertyProperty extends Struct.CollectionTypeSchema {
     photo: Schema.Attribute.Media<'images'>;
     publishedAt: Schema.Attribute.DateTime;
     titleDeed: Schema.Attribute.Media<'files'>;
+    uavtAddress: Schema.Attribute.Text;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    usageType: Schema.Attribute.Enumeration<
-      ['rented', 'foundation_use', 'usufruct']
-    > &
-      Schema.Attribute.Required;
+    usageType: Schema.Attribute.String;
   };
 }
 

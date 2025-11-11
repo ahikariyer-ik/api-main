@@ -124,7 +124,7 @@ module.exports = (plugin) => {
 
         const users = await strapi.documents('plugin::users-permissions.user').findMany({
             filters: query.filters || {},
-            fields: ['id', 'documentId', 'username', 'email', 'blocked', 'confirmed'],
+            fields: ['id', 'documentId', 'username', 'email', 'blocked', 'confirmed', 'ahiIkMember'],
             populate: {
                 role: {
                     fields: ['id', 'name']
@@ -156,21 +156,6 @@ module.exports = (plugin) => {
                     user.companyProfile = companyProfile[0] || null;
                 }
             }
-
-            if (populateFields.includes('postingRights')) {
-                for (let user of users) {
-                    if (user.companyProfile && user.companyProfile.id) {
-                        const postingRights = await strapi.documents('api::posting-right.posting-right').findMany({
-                            fields: ['id', 'postingQuota', 'postingsUsed'],
-                            filters: { company: user.companyProfile.id }
-                        });
-                        
-                        user.postingRights = postingRights[0] || null;
-                    } else {
-                        user.postingRights = null;
-                    }
-                }
-            }
         }
 
         return { data: users };
@@ -181,7 +166,7 @@ module.exports = (plugin) => {
 
         const user = await strapi.documents('plugin::users-permissions.user').findOne({
             documentId: documentId,
-            fields: ['id', 'username', 'email', 'blocked', 'confirmed'],
+            fields: ['id', 'username', 'email', 'blocked', 'confirmed', 'ahiIkMember'],
             populate: { role: true },
         });
 
@@ -200,14 +185,6 @@ module.exports = (plugin) => {
                 });
                 user.companyProfile = companyProfile[0];
             }
-
-            if (populateFields.includes('postingRights') && user.companyProfile) {
-                const postingRights = await strapi.documents('api::posting-right.posting-right').findMany({
-                    fields: ['id', 'postingQuota', 'postingsUsed'],
-                    filters: { company: user.companyProfile.id },
-                });
-                user.postingRights = postingRights[0];
-            }
         }
 
         return { data: user };
@@ -221,7 +198,6 @@ module.exports = (plugin) => {
         });
 
         let companyProfile = null;
-        let postingRights = null;
 
         if (createdUser.role?.type === 'authenticated') {
             companyProfile = await strapi.documents('api::company-profile.company-profile').create({
@@ -231,29 +207,18 @@ module.exports = (plugin) => {
                     owner: createdUser.id,
                 },
             });
-
-            postingRights = await strapi.documents('api::posting-right.posting-right').create({
-                data: {
-                    company: companyProfile.id,
-                    postingQuota: input.postingRights || 0,
-                    postingsUsed: 0,
-                    activePostings: 0,
-                    totalApplicationCount: 0,
-                },
-            });
         }
 
         const responseData = {
             ...createdUser,
             companyProfile,
-            postingRights,
         };
 
         return await sanitizeUser(responseData, ctx);
     },
     async update(ctx) {
         const { id: documentId } = ctx.params;
-        const { companyProfile, postingRights, ...userData } = ctx.request.body;
+        const { companyProfile, ...userData } = ctx.request.body;
 
         const updatedUser = await strapi.documents('plugin::users-permissions.user').update({
             documentId,
@@ -289,36 +254,6 @@ module.exports = (plugin) => {
                 });
             }
         }
-      
-        let updatedPostingRights = null;
-        if (postingRights && updatedCompanyProfile) {
-          const postingRightsList = await strapi.documents('api::posting-right.posting-right').findMany({
-            filters: { company: updatedCompanyProfile.id },
-            limit: 1,
-          });
-          
-          if (postingRightsList?.length > 0) {
-            const postingRight = postingRightsList[0];
-
-            updatedPostingRights = await strapi.documents('api::posting-right.posting-right').update({
-              documentId: postingRight.documentId,
-              data: {
-                postingQuota: postingRights.postingQuota,
-              },
-            });
-          } else {
-            // Posting rights yoksa oluştur
-            updatedPostingRights = await strapi.documents('api::posting-right.posting-right').create({
-              data: {
-                company: updatedCompanyProfile.id,
-                postingQuota: postingRights.postingQuota || 0,
-                postingsUsed: 0,
-                activePostings: 0,
-                totalApplicationCount: 0,
-              },
-            });
-          }
-        }
 
         const sanitized = await sanitizeUser(updatedUser, ctx);
       
@@ -326,7 +261,6 @@ module.exports = (plugin) => {
           data: {
             ...sanitized,
             companyProfile: updatedCompanyProfile,
-            postingRights: updatedPostingRights,
           },
         };
     },
@@ -350,16 +284,6 @@ module.exports = (plugin) => {
 
         if (companyProfiles?.length > 0) {
             const companyProfile = companyProfiles[0];
-
-            const postingRights = await strapi.documents('api::posting-right.posting-right').findMany({
-                filters: { company: companyProfile.id },
-            });
-
-            if (postingRights?.length > 0) {
-                await strapi.documents('api::posting-right.posting-right').delete({
-                    documentId: postingRights[0].documentId,
-                });
-            }
 
             await strapi.documents('api::company-profile.company-profile').delete({
                 documentId: companyProfile.documentId,
