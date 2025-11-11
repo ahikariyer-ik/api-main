@@ -95,3 +95,4 @@ module.exports = createCoreController('api::property.property', ({ strapi }) => 
 
 
 
+
