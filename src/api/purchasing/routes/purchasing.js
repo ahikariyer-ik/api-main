@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * property router
+ * purchasing router
  */
 
 const { createCoreRouter } = require('@strapi/strapi').factories;
@@ -10,8 +10,8 @@ module.exports = {
   routes: [
     {
       method: 'GET',
-      path: '/properties',
-      handler: 'property.find',
+      path: '/purchasings',
+      handler: 'purchasing.find',
       config: {
         policies: [],
         middlewares: [],
@@ -19,8 +19,8 @@ module.exports = {
     },
     {
       method: 'GET',
-      path: '/properties/:id',
-      handler: 'property.findOne',
+      path: '/purchasings/:id',
+      handler: 'purchasing.findOne',
       config: {
         policies: [],
         middlewares: [],
@@ -28,8 +28,8 @@ module.exports = {
     },
     {
       method: 'POST',
-      path: '/properties',
-      handler: 'property.create',
+      path: '/purchasings',
+      handler: 'purchasing.create',
       config: {
         policies: [],
         middlewares: [],
@@ -37,8 +37,8 @@ module.exports = {
     },
     {
       method: 'PUT',
-      path: '/properties/:id',
-      handler: 'property.update',
+      path: '/purchasings/:id',
+      handler: 'purchasing.update',
       config: {
         policies: [],
         middlewares: [],
@@ -46,8 +46,8 @@ module.exports = {
     },
     {
       method: 'DELETE',
-      path: '/properties/:id',
-      handler: 'property.delete',
+      path: '/purchasings/:id',
+      handler: 'purchasing.delete',
       config: {
         policies: [],
         middlewares: [],
@@ -55,9 +55,5 @@ module.exports = {
     },
   ],
 };
-
-
-
-
 
 

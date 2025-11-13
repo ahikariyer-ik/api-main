@@ -42,6 +42,10 @@
       "type": "string",
       "required": false
     },
+    "daskPolicyDate": {
+      "type": "date",
+      "required": false
+    },
     "acquisitionMethod": {
       "type": "string",
       "required": false

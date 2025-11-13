@@ -1,14 +1,14 @@
 'use strict';
 
 /**
- * decision controller
+ * purchasing controller
  */
 
 const { createCoreController } = require('@strapi/strapi').factories;
 
-module.exports = createCoreController('api::decision.decision', ({ strapi }) => ({
+module.exports = createCoreController('api::purchasing.purchasing', ({ strapi }) => ({
   /**
-   * Find decisions filtered by company and optionally by institution
+   * Find purchasings filtered by company and optionally by institution
    */
   async find(ctx) {
     try {
@@ -36,24 +36,67 @@ module.exports = createCoreController('api::decision.decision', ({ strapi }) => 
         where.institution = institutionId;
       }
 
-      // Get decisions for this company
-      const decisions = await strapi.db.query('api::decision.decision').findMany({
+      // Get purchasings for this company
+      const purchasings = await strapi.db.query('api::purchasing.purchasing').findMany({
         where,
-        populate: ['institution', 'document'],
+        populate: ['institution', 'invoice'],
         orderBy: { createdAt: 'desc' }
       });
 
       return ctx.send({
-        data: decisions
+        data: purchasings
       });
     } catch (error) {
-      console.error('Find decisions error:', error);
-      return ctx.internalServerError('Kararlar yüklenirken bir hata oluştu: ' + error.message);
+      console.error('Find purchasings error:', error);
+      return ctx.internalServerError('Satın almalar yüklenirken bir hata oluştu: ' + error.message);
     }
   },
 
   /**
-   * Create decision
+   * Find one purchasing by ID (with company check)
+   */
+  async findOne(ctx) {
+    try {
+      const user = ctx.state.user;
+      const { id } = ctx.params;
+
+      if (!user) {
+        return ctx.unauthorized('Giriş yapmalısınız');
+      }
+
+      // Find company profile for user
+      const companyProfile = await strapi.db.query('api::company-profile.company-profile').findOne({
+        where: { owner: user.id }
+      });
+
+      if (!companyProfile) {
+        return ctx.notFound('Şirket profili bulunamadı');
+      }
+
+      // Get purchasing for this company
+      const purchasing = await strapi.db.query('api::purchasing.purchasing').findOne({
+        where: { 
+          id,
+          company: companyProfile.id 
+        },
+        populate: ['institution', 'invoice']
+      });
+
+      if (!purchasing) {
+        return ctx.notFound('Satın alma bulunamadı');
+      }
+
+      return ctx.send({
+        data: purchasing
+      });
+    } catch (error) {
+      console.error('Find one purchasing error:', error);
+      return ctx.internalServerError('Satın alma yüklenirken bir hata oluştu: ' + error.message);
+    }
+  },
+
+  /**
+   * Create purchasing
    */
   async create(ctx) {
     try {
@@ -73,69 +116,26 @@ module.exports = createCoreController('api::decision.decision', ({ strapi }) => 
         return ctx.notFound('Şirket profili bulunamadı');
       }
 
-      // Create decision
-      const decision = await strapi.db.query('api::decision.decision').create({
+      // Create purchasing
+      const purchasing = await strapi.db.query('api::purchasing.purchasing').create({
         data: {
           ...data,
           company: companyProfile.id
         },
-        populate: ['institution', 'document']
+        populate: ['institution', 'invoice']
       });
 
       return ctx.send({
-        data: decision
+        data: purchasing
       });
     } catch (error) {
-      console.error('Create decision error:', error);
-      return ctx.internalServerError('Karar oluşturulurken bir hata oluştu: ' + error.message);
+      console.error('Create purchasing error:', error);
+      return ctx.internalServerError('Satın alma oluşturulurken bir hata oluştu: ' + error.message);
     }
   },
 
   /**
-   * Find one decision by ID (with company check)
-   */
-  async findOne(ctx) {
-    try {
-      const user = ctx.state.user;
-      const { id } = ctx.params;
-
-      if (!user) {
-        return ctx.unauthorized('Giriş yapmalısınız');
-      }
-
-      // Find company profile
-      const companyProfile = await strapi.db.query('api::company-profile.company-profile').findOne({
-        where: { owner: user.id }
-      });
-
-      if (!companyProfile) {
-        return ctx.notFound('Şirket profili bulunamadı');
-      }
-
-      // Get decision for this company
-      const decision = await strapi.db.query('api::decision.decision').findOne({
-        where: { 
-          id,
-          company: companyProfile.id 
-        },
-        populate: ['institution', 'document']
-      });
-
-      if (!decision) {
-        return ctx.notFound('Karar bulunamadı');
-      }
-
-      return ctx.send({
-        data: decision
-      });
-    } catch (error) {
-      console.error('Find one decision error:', error);
-      return ctx.internalServerError('Karar yüklenirken bir hata oluştu: ' + error.message);
-    }
-  },
-
-  /**
-   * Update decision (with company check)
+   * Update purchasing (with company check)
    */
   async update(ctx) {
     try {
@@ -156,36 +156,36 @@ module.exports = createCoreController('api::decision.decision', ({ strapi }) => 
         return ctx.notFound('Şirket profili bulunamadı');
       }
 
-      // Check if decision belongs to this company
-      const existingDecision = await strapi.db.query('api::decision.decision').findOne({
+      // Check if purchasing belongs to this company
+      const existingPurchasing = await strapi.db.query('api::purchasing.purchasing').findOne({
         where: { 
           id,
           company: companyProfile.id 
         }
       });
 
-      if (!existingDecision) {
-        return ctx.notFound('Karar bulunamadı veya erişim yetkiniz yok');
+      if (!existingPurchasing) {
+        return ctx.notFound('Satın alma bulunamadı veya erişim yetkiniz yok');
       }
 
-      // Update decision
-      const decision = await strapi.db.query('api::decision.decision').update({
+      // Update purchasing
+      const purchasing = await strapi.db.query('api::purchasing.purchasing').update({
         where: { id },
         data: data,
-        populate: ['institution', 'document']
+        populate: ['institution', 'invoice']
       });
 
       return ctx.send({
-        data: decision
+        data: purchasing
       });
     } catch (error) {
-      console.error('Update decision error:', error);
-      return ctx.internalServerError('Karar güncellenirken bir hata oluştu: ' + error.message);
+      console.error('Update purchasing error:', error);
+      return ctx.internalServerError('Satın alma güncellenirken bir hata oluştu: ' + error.message);
     }
   },
 
   /**
-   * Delete decision (with company check)
+   * Delete purchasing (with company check)
    */
   async delete(ctx) {
     try {
@@ -205,35 +205,31 @@ module.exports = createCoreController('api::decision.decision', ({ strapi }) => 
         return ctx.notFound('Şirket profili bulunamadı');
       }
 
-      // Check if decision belongs to this company
-      const existingDecision = await strapi.db.query('api::decision.decision').findOne({
+      // Check if purchasing belongs to this company
+      const existingPurchasing = await strapi.db.query('api::purchasing.purchasing').findOne({
         where: { 
           id,
           company: companyProfile.id 
         }
       });
 
-      if (!existingDecision) {
-        return ctx.notFound('Karar bulunamadı veya erişim yetkiniz yok');
+      if (!existingPurchasing) {
+        return ctx.notFound('Satın alma bulunamadı veya erişim yetkiniz yok');
       }
 
-      // Delete decision
-      await strapi.db.query('api::decision.decision').delete({
+      // Delete purchasing
+      await strapi.db.query('api::purchasing.purchasing').delete({
         where: { id }
       });
 
       return ctx.send({
-        data: existingDecision
+        data: existingPurchasing
       });
     } catch (error) {
-      console.error('Delete decision error:', error);
-      return ctx.internalServerError('Karar silinirken bir hata oluştu: ' + error.message);
+      console.error('Delete purchasing error:', error);
+      return ctx.internalServerError('Satın alma silinirken bir hata oluştu: ' + error.message);
     }
   }
 }));
-
-
-
-
 
 

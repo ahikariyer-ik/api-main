@@ -1135,6 +1135,60 @@ export interface ApiOutgoingDocumentOutgoingDocument
   };
 }
 
+export interface ApiPdksAttendancePdksAttendance
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'pdks_attendances';
+  info: {
+    description: 'Personel giri\u015F-\u00E7\u0131k\u0131\u015F kay\u0131tlar\u0131';
+    displayName: 'PDKS Attendance';
+    pluralName: 'pdks-attendances';
+    singularName: 'pdks-attendance';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    branch: Schema.Attribute.Relation<'manyToOne', 'api::branch.branch'>;
+    checkTime: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    checkType: Schema.Attribute.Enumeration<['in', 'out']> &
+      Schema.Attribute.Required;
+    company: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::company-profile.company-profile'
+    > &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    ipAddress: Schema.Attribute.String;
+    isManual: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::pdks-attendance.pdks-attendance'
+    > &
+      Schema.Attribute.Private;
+    locationLatitude: Schema.Attribute.Decimal;
+    locationLongitude: Schema.Attribute.Decimal;
+    manualEntryBy: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    notes: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    qrCodeSession: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::qr-code-session.qr-code-session'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userAgent: Schema.Attribute.String;
+    worker: Schema.Attribute.Relation<'manyToOne', 'api::worker.worker'> &
+      Schema.Attribute.Required;
+  };
+}
+
 export interface ApiPositionPosition extends Struct.CollectionTypeSchema {
   collectionName: 'positions';
   info: {
@@ -1255,6 +1309,7 @@ export interface ApiPropertyProperty extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     daskPolicy: Schema.Attribute.Media<'files'>;
+    daskPolicyDate: Schema.Attribute.Date;
     daskPolicyNumber: Schema.Attribute.String;
     institution: Schema.Attribute.Relation<
       'manyToOne',
@@ -1275,6 +1330,162 @@ export interface ApiPropertyProperty extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     usageType: Schema.Attribute.String;
+  };
+}
+
+export interface ApiPurchasingPurchasing extends Struct.CollectionTypeSchema {
+  collectionName: 'purchasings';
+  info: {
+    description: 'Kurum Y\u00F6netimi - Sat\u0131n Alma';
+    displayName: 'Purchasing';
+    pluralName: 'purchasings';
+    singularName: 'purchasing';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    category: Schema.Attribute.String;
+    company: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::company-profile.company-profile'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    deliveryDate: Schema.Attribute.Date;
+    institution: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::institution.institution'
+    > &
+      Schema.Attribute.Required;
+    invoice: Schema.Attribute.Media<'files' | 'images'>;
+    invoiceNumber: Schema.Attribute.String;
+    itemName: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::purchasing.purchasing'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    purchaseDate: Schema.Attribute.Date;
+    quantity: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<1>;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'ordered', 'delivered', 'cancelled']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    supplier: Schema.Attribute.String;
+    totalPrice: Schema.Attribute.Decimal;
+    unitPrice: Schema.Attribute.Decimal;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiQrCodeSessionQrCodeSession
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'qr_code_sessions';
+  info: {
+    description: 'PDKS i\u00E7in g\u00FCvenli QR kod oturumlar\u0131';
+    displayName: 'QR Code Session';
+    pluralName: 'qr-code-sessions';
+    singularName: 'qr-code-session';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    allowedIpAddresses: Schema.Attribute.Text;
+    branch: Schema.Attribute.Relation<'manyToOne', 'api::branch.branch'>;
+    company: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::company-profile.company-profile'
+    > &
+      Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    expiresAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::qr-code-session.qr-code-session'
+    > &
+      Schema.Attribute.Private;
+    locationLatitude: Schema.Attribute.Decimal;
+    locationLongitude: Schema.Attribute.Decimal;
+    locationRadius: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<100>;
+    maxUsageCount: Schema.Attribute.Integer;
+    notes: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    sessionName: Schema.Attribute.String;
+    sessionToken: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    usageCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+  };
+}
+
+export interface ApiReminderReminder extends Struct.CollectionTypeSchema {
+  collectionName: 'reminders';
+  info: {
+    description: 'An\u0131msat\u0131c\u0131lar - Reminder Notifications';
+    displayName: 'Reminder';
+    pluralName: 'reminders';
+    singularName: 'reminder';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    company: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::company-profile.company-profile'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    isSent: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::reminder.reminder'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text;
+    phoneNumber: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    relatedProperty: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::property.property'
+    >;
+    relatedVehicle: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::vehicle.vehicle'
+    >;
+    reminderDate: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    reminderType: Schema.Attribute.Enumeration<
+      ['dask_policy', 'vehicle_insurance', 'vehicle_inspection', 'custom']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'custom'>;
+    sentAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['pending', 'sent', 'failed']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -2077,10 +2288,14 @@ declare module '@strapi/strapi' {
       'api::job-listing.job-listing': ApiJobListingJobListing;
       'api::leave-request.leave-request': ApiLeaveRequestLeaveRequest;
       'api::outgoing-document.outgoing-document': ApiOutgoingDocumentOutgoingDocument;
+      'api::pdks-attendance.pdks-attendance': ApiPdksAttendancePdksAttendance;
       'api::position.position': ApiPositionPosition;
       'api::posting-right.posting-right': ApiPostingRightPostingRight;
       'api::profession.profession': ApiProfessionProfession;
       'api::property.property': ApiPropertyProperty;
+      'api::purchasing.purchasing': ApiPurchasingPurchasing;
+      'api::qr-code-session.qr-code-session': ApiQrCodeSessionQrCodeSession;
+      'api::reminder.reminder': ApiReminderReminder;
       'api::sector.sector': ApiSectorSector;
       'api::service.service': ApiServiceService;
       'api::task.task': ApiTaskTask;
