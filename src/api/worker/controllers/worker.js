@@ -9,7 +9,7 @@ const crypto = require('crypto');
 
 module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
   /**
-   * Override find method to filter by company
+   * Override find method to filter by company OR return own profile if worker
    */
   async find(ctx) {
     try {
@@ -20,7 +20,51 @@ module.exports = createCoreController('api::worker.worker', ({ strapi }) => ({
         return ctx.unauthorized('Oturum açmanız gerekiyor');
       }
 
-      // Get user's company profile
+      // Check if user is a worker
+      const isWorker = user.role?.type === 'worker';
+
+      // If user is a worker, check if they're querying their own data
+      if (isWorker) {
+        // Check if query is filtering by user ID (worker looking up their own profile)
+        const userIdFilter = ctx.query.filters?.user?.id;
+        
+        if (userIdFilter && parseInt(userIdFilter) === user.id) {
+          // Worker querying their own profile
+          console.log('Worker querying own profile:', user.id);
+          
+          const worker = await strapi.db.query('api::worker.worker').findOne({
+            where: { user: user.id },
+            populate: {
+              photo: true,
+              department: true,
+              branch: true,
+              position: true,
+              company: true,
+              user: true,
+              criminalRecordDoc: true,
+              populationRegistryDoc: true,
+              identityDoc: true,
+              residenceDoc: true,
+              militaryDoc: true,
+              employmentStartDoc: true
+            }
+          });
+
+          if (!worker) {
+            console.log('Worker profile not found for user:', user.id);
+            return ctx.send({ data: [] });
+          }
+
+          return ctx.send({
+            data: [worker]
+          });
+        } else {
+          // Worker trying to access other workers - not allowed
+          return ctx.forbidden('Çalışanlar sadece kendi profillerini görüntüleyebilir');
+        }
+      }
+
+      // For company users, get their company profile
       const companyProfile = await strapi.db.query('api::company-profile.company-profile').findOne({
         where: { owner: user.id }
       });
