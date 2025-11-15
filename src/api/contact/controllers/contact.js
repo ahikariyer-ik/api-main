@@ -8,16 +8,11 @@ const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController("api::contact.contact", ({ strapi }) => ({
   async public(ctx) {
-    const { query } = ctx;
-    const filters = query.filters || {};
-
-    const contacts = await strapi.db.query("api::contact.contact").findMany({
-      where: {
-        ...filters
-      },
+    // Single type için findOne kullanılmalı
+    const contact = await strapi.db.query("api::contact.contact").findOne({
       populate: true,
     });
 
-    return { data: contacts };
+    return { data: contact };
   },
 }));
